@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  generator:
+    build:
+      context: ./generator
+    depends_on:
+      - aggregator
+
+  aggregator:
+    build:
+      context: ./aggregator
+    depends_on:
+      - processor
+
+  processor:
+    build:
+      context: ./processor
