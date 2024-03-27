@@ -3,7 +3,7 @@ import logging
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.requests import Request
 
-from model.structs.exceptions.common import InternalServerException
+from common.model.exceptions.common import InternalServerException
 
 logger = logging.getLogger(__name__)
 
