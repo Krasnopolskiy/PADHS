@@ -1,0 +1,10 @@
+groups:
+  - name: API Errors
+    rules:
+      - alert: Unhandled Exception
+        expr: rate(fastapi_exceptions_total{app_name="api"}[1m]) > 0
+        labels:
+          severity: error
+        annotations:
+          summary: "Unhandled Exception"
+          description: "Got an unhandled {{ $labels.exception_type }} on {{ $labels.path }}"

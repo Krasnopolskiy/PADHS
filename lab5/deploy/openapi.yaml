@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /contracts/:
+    post:
+      tags:
+        - Contracts
+      summary: Create
+      operationId: create_contracts__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/{address}:
+    get:
+      tags:
+        - Contracts
+      summary: Find By Address
+      operationId: find_by_address_contracts__address__get
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /test/status:
+    get:
+      tags:
+        - Test
+      summary: Random Status
+      operationId: random_status_test_status_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RandomStatusResponse'
+  /test/sleep:
+    get:
+      tags:
+        - Test
+      summary: Random Sleep
+      operationId: random_sleep_test_sleep_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RandomSleepResponse'
+  /test/log/{level}:
+    get:
+      tags:
+        - Test
+      summary: Random Log
+      operationId: random_log_test_log__level__get
+      parameters:
+        - name: level
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/LogLevel'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RandomLogResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /test/error:
+    get:
+      tags:
+        - Test
+      summary: Random Error
+      operationId: random_error_test_error_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RandomLogResponse'
+  /metrics/:
+    get:
+      tags:
+        - Metrics
+      summary: Metrics
+      operationId: metrics_metrics__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: { }
+components:
+  schemas:
+    ContractRequest:
+      properties:
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: Address
+      type: object
+      required:
+        - address
+      title: ContractRequest
+    ContractResponse:
+      properties:
+        address:
+          type: string
+          pattern: ^0x[a-fA-F0-9]{40}$
+          title: Address
+        status:
+          $ref: '#/components/schemas/Status'
+        source:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Source
+      type: object
+      required:
+        - address
+        - status
+        - source
+      title: ContractResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LogLevel:
+      type: string
+      enum:
+        - debug
+        - info
+        - warning
+        - error
+        - critical
+      title: LogLevel
+    RandomLogResponse:
+      properties:
+        level:
+          $ref: '#/components/schemas/LogLevel'
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+        - level
+        - message
+      title: RandomLogResponse
+    RandomSleepResponse:
+      properties:
+        sleep:
+          type: integer
+          title: Sleep
+      type: object
+      required:
+        - sleep
+      title: RandomSleepResponse
+    RandomStatusResponse:
+      properties:
+        status:
+          type: integer
+          title: Status
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+        - status
+        - message
+      title: RandomStatusResponse
+    Status:
+      type: string
+      enum:
+        - created
+        - process
+        - success
+        - error
+      title: Status
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError

@@ -1,0 +1,120 @@
+name: lab5
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
+    command: [ "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000" ]
+    env_file:
+      - ./config/.env
+    environment:
+      - DB_HOST=mysql
+      - AMQP_HOST=rabbitmq
+      - LOKI_URL=http://loki:3100
+      - TEMPO_URL=http://tempo:4317
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  scanner:
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
+    command: [ "python3", "scanner/app.py" ]
+    env_file:
+      - ./config/.env
+    environment:
+      - DB_HOST=mysql
+      - AMQP_HOST=rabbitmq
+      - LOKI_URL=http://loki:3100
+      - TEMPO_URL=http://tempo:4317
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  mysql:
+    image: mysql
+    env_file:
+      - ./config/.env
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 3s
+      retries: 100
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  rabbitmq:
+    image: rabbitmq:management
+    env_file:
+      - ./config/.env
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      timeout: 3s
+      retries: 100
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  grafana:
+    image: grafana/grafana
+    user: "0:0"
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+
+  loki:
+    image: grafana/loki
+    user: "0:0"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./config/loki/loki.yml:/etc/loki/loki.yml
+      - ./data/loki:/loki/
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus/alerts:/etc/prometheus/alerts
+    ports:
+      - "9090:9090"
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter
+    command: [ --path.rootfs=/host ]
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+    ports:
+      - "9100:9100"
+
+  tempo:
+    image: grafana/tempo
+    command: [ "-config.file=/etc/tempo.yml" ]
+    volumes:
+      - ./config/tempo/tempo.yml:/etc/tempo.yml
+    ports:
+      - 4317:4317
+
+  alertmanager:
+    image: prom/alertmanager
+    command: [ "--config.file=/etc/alertmanager.yml" ]
+    volumes:
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager.yml
+    ports:
+      - "9093:9093"

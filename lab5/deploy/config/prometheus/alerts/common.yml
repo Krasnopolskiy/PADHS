@@ -1,0 +1,10 @@
+groups:
+  - name: Service Errors
+    rules:
+      - alert: Service is Down
+        expr: up == 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} is down"
