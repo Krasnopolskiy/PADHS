@@ -1,9 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
-from shared.config.database import DatabaseSettings
-from shared.database.entity.base import BaseEntity
 from sqlalchemy import engine_from_config, pool
+
+from common.config.database import DatabaseSettings
+from common.database.entity.base import BaseEntity
 
 config = context.config
 

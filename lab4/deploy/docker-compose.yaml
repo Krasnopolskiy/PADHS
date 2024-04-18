@@ -1,11 +1,11 @@
-version: '3.8'
+name: lab5
 
 services:
   api:
     build:
       context: ..
       dockerfile: ./deploy/Dockerfile
-    command: [ "uvicorn", "--workers", "10", "api.app:app", "--host", "0.0.0.0", "--port", "8000" ]
+    command: [ "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000" ]
     env_file:
       - ./config/.env
     environment:
@@ -13,6 +13,11 @@ services:
       - AMQP_HOST=rabbitmq
     ports:
       - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   scanner:
     build:
@@ -24,6 +29,11 @@ services:
     environment:
       - DB_HOST=mysql
       - AMQP_HOST=rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   mysql:
     image: mysql
@@ -35,6 +45,8 @@ services:
       retries: 100
     volumes:
       - ./data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
 
   rabbitmq:
     image: rabbitmq:management
@@ -46,3 +58,4 @@ services:
       retries: 100
     ports:
       - "15672:15672"
+      - "5672:5672"

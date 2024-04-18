@@ -10,7 +10,8 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
-from shared.database.entity.contract import AddressEncoder
+
+from common.database.entity.contract import AddressEncoder
 
 # revision identifiers, used by Alembic.
 revision: str = "4c124e3db2f4"

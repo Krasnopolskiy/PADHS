@@ -14,3 +14,5 @@ ADD src src
 ENV PYTHONPATH /src
 
 WORKDIR src
+
+ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]

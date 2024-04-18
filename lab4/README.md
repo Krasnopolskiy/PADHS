@@ -43,8 +43,8 @@
 
 1. Создать и активировать виртуальную среду:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   poetry env use python3
+   poetry shell
    ```
 2. Установить зависимости:
    ```bash
@@ -52,7 +52,7 @@
    ```
 3. Установить директорию проекта:
    ```bash
-   export PYTHONPATH=/Users/ivan/PycharmProjects/PADHS/lab4/src;
+   export PYTHONPATH="$(pwd)/src";
    ```
 
 ### Запуск сервисов
@@ -70,7 +70,7 @@
    ```
 2. Запустить тестирование:
    ```bash
-   python3 python3 stresser.py
+   python3 stresser.py
    ```
 
 ## Нагрузочное тестирование

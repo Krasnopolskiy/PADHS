@@ -2,16 +2,11 @@ import asyncio
 
 import structlog
 
+from common.config.logging import LoggingConfig
 from scanner.contract import ContractScanner
 
-structlog.configure(
-    processors=[
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="%H:%M:%S", utc=False),
-        structlog.dev.ConsoleRenderer(),
-    ],
-    logger_factory=structlog.PrintLoggerFactory(),
-)
+LoggingConfig().setup_logging()
+
 logger = structlog.get_logger()
 
 

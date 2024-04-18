@@ -11,7 +11,7 @@ from api.model.schemas.contract import ContractRequest, ContractResponse
 from common.database.entity import Contract
 from common.model.types import Address
 
-URL = "http://localhost:8000/contracts"
+URL = "http://localhost:8000"
 RPS = 25
 DURATION = 1 * 60
 
@@ -20,8 +20,7 @@ structlog.configure(
         structlog.processors.CallsiteParameterAdder(parameters=[CallsiteParameter.PROCESS_NAME]),
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="%H:%M:%S", utc=False),
-        # structlog.dev.ConsoleRenderer(),
-        structlog.processors.JSONRenderer(),
+        structlog.dev.ConsoleRenderer(),
     ],
     logger_factory=structlog.PrintLoggerFactory(),
 )
@@ -48,17 +47,21 @@ def ignore_exceptions(func):
 
 
 @ignore_exceptions
-async def create_contract(session: ClientSession) -> dict:
+async def create_contract(session: ClientSession) -> ContractResponse | None:
     request = ContractRequest(address=generate_address())
-    async with session.post(f"{URL}/", json=request.model_dump()) as response:
-        return await response.json()
+    async with session.post(f"{URL}/contracts", json=request.model_dump()) as response:
+        if response.status == 200:
+            data = await response.json()
+            return ContractResponse(**data)
+    return None
 
 
 @ignore_exceptions
-async def fetch_contract(session: ClientSession, address: Address) -> dict | None:
-    async with session.get(f"{URL}/{address}") as response:
+async def fetch_contract(session: ClientSession, address: Address) -> ContractResponse | None:
+    async with session.get(f"{URL}/contracts/{address}") as response:
         if response.status == 200:
-            return await response.json()
+            data = await response.json()
+            return ContractResponse(**data)
     return None
 
 
@@ -71,8 +74,8 @@ async def create_bulk_contracts(contracts: dict[Address, Contract.Status]):
             async with asyncio.TaskGroup() as tg:
                 tasks = [tg.create_task(create_contract(session)) for _ in range(RPS)]
             for task in tasks:
-                response = ContractResponse(**task.result())
-                contracts[response.address] = response.status
+                if response := task.result():
+                    contracts[response.address] = response.status
             while time.time() - request_time < 1:
                 await asyncio.sleep(0.01)
 
@@ -83,12 +86,11 @@ async def fetch_bulk_contracts(contracts: dict[Address, Contract.Status]):
     async with ClientSession() as session:
         while any(not is_finished(contracts, address) for address in contracts.keys()):
             pending = [address for address in contracts.keys() if not is_finished(contracts, address)]
-            logger.info("Pending: [%s]", len(pending))
+            logger.info("Fetching: [%s]", len(pending))
             async with asyncio.TaskGroup() as tg:
                 tasks = [tg.create_task(fetch_contract(session, address)) for address in pending]
             for task in tasks:
                 if response := task.result():
-                    response = ContractResponse(**response)
                     contracts[response.address] = response.status
             await asyncio.sleep(1)
 

@@ -12,7 +12,7 @@ from common.database.dao.contract import ContractDao
 from common.database.entity import Contract
 from common.model.mapper.contract import ContractMapper
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 
 
 class ContractScanner:
