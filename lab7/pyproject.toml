@@ -1,0 +1,28 @@
+[tool.poetry]
+authors = ["Ivan Krasnopolsky <i1.krasnopolskiy@gmail.com>"]
+description = ""
+name = "lab7"
+readme = "README.md"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+grpcio = "^1.64.0"
+grpcio-tools = "^1.64.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+isort = "^5.13.2"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.black]
+exclude = '(\.git|\.cache|\.venv|\.idea|__pycache__)'
+line-length = 120
+
+[tool.isort]
+line_length = 120
+profile = "black"
+skip = ["**/__pycache__/**", ".cache", ".git", ".idea", ".venv"]

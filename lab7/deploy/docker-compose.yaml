@@ -1,0 +1,32 @@
+name: lab6
+
+services:
+  server1:
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
+    command: [ "python", "server/server.py", "server1", "50051" ]
+
+  server2:
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
+    command: [ "python", "server/server.py", "server2", "50051" ]
+
+  client:
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
+    command: [ "python", "client/client.py" ]
+    depends_on:
+      - lb
+
+  lb:
+    image: nginx:latest
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server1
+      - server2
