@@ -1,7 +1,7 @@
 [tool.poetry]
 authors = ["Ivan Krasnopolsky <i1.krasnopolskiy@gmail.com>"]
 description = ""
-name = "lab5"
+name = "lab6"
 readme = "README.md"
 version = "0.1.0"
 
